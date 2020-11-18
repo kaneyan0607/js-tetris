@@ -94,14 +94,16 @@ function drawAll() {
 }
 
 // ブロックの衝突判定
-function checkMove(mx, my) {
+function checkMove(mx, my, ntetro) {
+
+    if (ntetro == undefined) ntetro = tetro;
     for (let y = 0; y < TETRO_SIZE; y++) {
 
         for (let x = 0; x < TETRO_SIZE; x++) {
 
             let nx = tetro_x + mx + x;
             let ny = tetro_y + my + y;
-            if (tetro[y][x] === 1) {
+            if (ntetro[y][x] === 1) {
                 if (field[ny][nx] ||
                     ny < 0 ||
                     nx < 0 ||
@@ -116,12 +118,25 @@ function checkMove(mx, my) {
     return true;
 }
 
+// テトロの回転
+function rotate() {
+    let ntetro = [];
+    for (let y = 0; y < TETRO_SIZE; y++) {
+
+        ntetro[y] = [];
+        for (let x = 0; x < TETRO_SIZE; x++) {
+            ntetro[y][x] = tetro[TETRO_SIZE - x - 1][y];
+        }
+    }
+    return ntetro;
+}
+
 //キーボードが押された時の処理
 document.onkeydown = function (e) {
     // onKeydown keycode 検索
     switch (e.keyCode) {
         case 37://　左
-            if (checkMove(- 1, 0)) tetro_x--;
+            if (checkMove(-1, 0)) tetro_x--;
             break;
         case 38://　上
             if (checkMove(0, -1)) tetro_y--;
@@ -133,6 +148,8 @@ document.onkeydown = function (e) {
             if (checkMove(0, 1)) tetro_y++;
             break;
         case 32://　スペース
+            let ntetro = rotate();
+            if (checkMove(0, 0, ntetro)) tetro = ntetro;
             break;
     }
     drawAll();
