@@ -1,3 +1,6 @@
+//落ちるスピード
+const GAME_SPEED = 300;
+
 //フィールドサイズ
 const FIELD_COL = 10;
 const FIELD_ROW = 20;
@@ -38,6 +41,8 @@ let field = [];
 
 init();
 drawAll();
+
+setInterval(dropTetro, GAME_SPEED);
 
 //初期化
 function init() {
@@ -101,15 +106,16 @@ function checkMove(mx, my, ntetro) {
 
         for (let x = 0; x < TETRO_SIZE; x++) {
 
-            let nx = tetro_x + mx + x;
-            let ny = tetro_y + my + y;
             if (ntetro[y][x] === 1) {
-                if (field[ny][nx] ||
-                    ny < 0 ||
+
+                let nx = tetro_x + mx + x;
+                let ny = tetro_y + my + y;
+
+                if (ny < 0 ||
                     nx < 0 ||
                     ny >= FIELD_ROW ||
-                    nx >= FIELD_COL
-                ) {
+                    nx >= FIELD_COL ||
+                    field[ny][nx]) {
                     return false;
                 }
             }
@@ -129,6 +135,28 @@ function rotate() {
         }
     }
     return ntetro;
+}
+
+//テトロを固定する処理
+function fixTetro() {
+    for (let y = 0; y < TETRO_SIZE; y++) {
+        for (let x = 0; x < TETRO_SIZE; x++) {
+            if (tetro[y][x]) {
+                field[tetro_y + y][tetro_x + x] = 1;
+            }
+        }
+    }
+}
+
+//ブロックの落ちる処理
+function dropTetro() {
+    if (checkMove(0, 1)) tetro_y++;
+    else {
+        fixTetro();
+        tetro_x = 0;
+        tetro_y = 0;
+    }
+    drawAll();
 }
 
 //キーボードが押された時の処理
