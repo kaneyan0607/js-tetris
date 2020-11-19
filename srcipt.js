@@ -96,6 +96,9 @@ let tetro_t;
 // フィールドの中身
 let field = [];
 
+//ゲームオーバーフラグ
+let over = false;
+
 tetro_t = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1;
 tetro = TETRO_TYPES[tetro_t]; //テトロミのをリロードするごとにランダムに出力
 
@@ -156,6 +159,17 @@ function drawAll() {
             }
         }
     }
+    if (over) {
+        let s = "GAME OVER";
+        con.font = "40px ’MS ゴシック’";
+        let w = con.measureText(s).width;
+        let x = SCREEN_W / 2 - w / 2;
+        let y = SCREEN_H / 2 - 20;
+        con.lineWidth = 4;
+        con.strokeText(s, x, y);
+        con.fillStyle = "white";
+        con.fillText(s, x, y);
+    }
 }
 
 // ブロックの衝突判定
@@ -208,21 +222,53 @@ function fixTetro() {
     }
 }
 
+//ラインが揃ったかチェックして消す
+function checkLine() {
+
+    let linec = 0;
+    for (let y = 0; y < FIELD_ROW; y++) {
+        let flag = true;
+        for (let x = 0; x < FIELD_COL; x++) {
+            if (!field[y][x]) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            linec++;
+            for (let ny = y; ny > 0; ny--) {
+                for (let nx = 0; nx < FIELD_COL; nx++) {
+                    field[ny][nx] = field[ny - 1][nx];
+                }
+            }
+        }
+    }
+}
+
 //ブロックの落ちる処理
 function dropTetro() {
+    if (over) return;
     if (checkMove(0, 1)) tetro_y++;
     else {
         fixTetro();
+        checkLine();
+
         tetro_t = Math.floor(Math.random() * (TETRO_TYPES.length - 1)) + 1;
         tetro = TETRO_TYPES[tetro_t];
         tetro_x = START_X;
         tetro_y = START_Y;
+
+        if (!checkMove(0, 0)) {
+            over = true;
+        }
     }
     drawAll();
 }
 
 //キーボードが押された時の処理
 document.onkeydown = function (e) {
+
+    if (over) return;
     // onKeydown keycode 検索
     switch (e.keyCode) {
         case 37://　左
